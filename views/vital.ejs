@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <style>
+    body {
+    font-family: Roboto Slab,Helvetica,Arial,sans-serif;
+    text-rendering: optimizeLegibility;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    -ms-overflow-style: scrollbar;
+    -webkit-tap-highlight-color: transparent;
+    }
+    body {
+    --code-font-family: Menlo,Monaco,Consolas,monospace;
+    --font-weight: 400;
+    --font-weight-bold: 700;
+    --font-weight-heading: 400;
+    --text-muted: #888;
+    --gray-bg: rgba(0,0,0,0.025);
+    --gray-text: #666;
+    --menu-text: #bbb;
+    --body-color: #333;
+    --body-bg: #fff;
+    --border-color: #ebebeb;
+    }
+</style>
+  <link rel="stylesheet" href="/css/burger.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/mdi-font/css/material-design-iconic-font.min.css">
+
+</head>
+<body>
+  <div class="b-nav">
+    <li><a class="b-link" href="/">Dashboard</a></li>
+    <li><a class="b-link" href="/sensors">Sensors</a></li>
+    <li><a class="b-link" href="/compass">Compass</a></li>
+    <li><a class="b-link b-link--active" href="/pdr">PDR (pedestrian dead reckoning)</a></li>
+    <li><a class="b-link" href="/vital">Vital/AI</a></li>
+  </div>
+  <div class="b-container">
+    <div class="b-menu"><div class="b-bun b-bun--top"></div><div class="b-bun b-bun--mid"></div><div class="b-bun b-bun--bottom"></div></div>
+    <a href="/" class="b-brand"><i class="zmdi zmdi-eye zmdi-hc-2x"></i><strong>&nbsp;&nbsp;Watching vital-reaction&nbsp;&nbsp;</strong></a>
+  </div>
+  <script src="/js/burger.min.js"></script>
+  <br><br><br><br><br>
+
+  <div class="container-fluid">
+  <h3>PDR (pedestrian dead reckoning)</h3>
+  <hr>
+  </br>
+  <div class="row">
+    <div id="picture" class="col-md-4 col-sm-12">
+        <h4>View</h4>
+        <img id="capture" src="" width="100%">
+        </br>
+        </br>
+        <h4>Sensor</h4>
+        <table class="table">
+        <thead>
+        <tr>
+        <th>type</th>
+        <th>X</th>
+        <th>Y</th>
+        <th>Z</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        <td>Accelerometer</td>
+        <td id="A0">-</td>
+        <td id="A1">-</td>
+        <td id="A2">-</td>
+        </tr>
+        <tr>
+        <td>Gyroscope</td>
+        <td id="G0">-</td>
+        <td id="G1">-</td>
+        <td id="G2">-</td>
+        </tr>
+        <tr>
+        <td>Orientation</td>
+        <td>heading</td>
+        <td>pitch</td>
+        <td>roll</td>
+        </tr>
+        <tr>
+        <td>Value</td>
+        <td id="O0">-</td>
+        <td id="O1">-</td>
+        <td id="O2">-</td>
+        </tr>
+      </tbody>
+      </table>
+    </div>
+    <div id="charts"  class="col-md-8 col-sm-12">
+      <h4>Graph</h4>
+      <div class="row">
+      <div id="chart0" class="col-md-4 col-sm-12"></div>
+      <div id="chart1" class="col-md-4 col-sm-12"></div>
+      <div id="chart2" class="col-md-4 col-sm-12"></div>
+      <div id="chart3" class="col-md-4 col-sm-12"></div>
+      <div id="chart4" class="col-md-4 col-sm-12"></div>
+      <div id="chart5" class="col-md-4 col-sm-12"></div>
+      <div id="chart6" class="col-md-4 col-sm-12"></div>
+      <div id="chart7" class="col-md-4 col-sm-12"></div>
+      <div id="chart8" class="col-md-4 col-sm-12"></div>
+      </div>
+    </div>
+  </div>
+  </div>
+<script>
+  google.charts.load('visualization', { packages: ['corechart'] });
+  google.charts.setOnLoadCallback(drawChart);
+
+  function drawChart() {
+    $.getJSON('/get-sensors', function(json) {
+
+      $("#A0").text(json.ax[0][1].toFixed(2));
+      $("#A1").text(json.ay[0][1].toFixed(2));
+      $("#A2").text(json.az[0][1].toFixed(2));
+      $("#G0").text(json.gx[0][1].toFixed(2));
+      $("#G1").text(json.gy[0][1].toFixed(2));
+      $("#G2").text(json.gz[0][1].toFixed(2));
+      $("#O0").text(json.heading[0][1].toFixed(2));
+      $("#O1").text(json.pitch[0][1].toFixed(2));
+      $("#O2").text(json.roll[0][1].toFixed(2));
+
+      var ch0 = new google.visualization.DataTable();
+      ch0.addColumn('number', 't');
+      ch0.addColumn('number', 'wave length');
+      var options = { title: 'acclX (-4G - 4G)', curveType: 'function', legend: 'none', lineWidth: 5, vAxis: { viewWindowMode:'explicit', viewWindow: { max:4, min:-4 }}};
+      var chart = new google.visualization.LineChart(document.getElementById('chart0'));
+      ch0.addRows(json.ax);
+      chart.draw(ch0, options);
+
+      var ch1 = new google.visualization.DataTable();
+      ch1.addColumn('number', 't');
+      ch1.addColumn('number', 'wave length');
+      var options = { title: 'acclY (-4G - 4G)', curveType: 'function', legend: 'none', lineWidth: 5, vAxis: { viewWindowMode:'explicit', viewWindow: { max:4, min:-4 }}};
+      var chart = new google.visualization.LineChart(document.getElementById('chart1'));
+      ch1.addRows(json.ay);
+      chart.draw(ch1, options);
+
+      var ch2 = new google.visualization.DataTable();
+      ch2.addColumn('number', 't');
+      ch2.addColumn('number', 'wave length');
+      var options = { title: 'acclZ (-4G - 4G)', curveType: 'function', legend: 'none', lineWidth: 5, vAxis: { viewWindowMode:'explicit', viewWindow: { max:4, min:-4 }}};
+      var chart = new google.visualization.LineChart(document.getElementById('chart2'));
+      ch2.addRows(json.az);
+      chart.draw(ch2, options);
+
+      var ch3 = new google.visualization.DataTable();
+      ch3.addColumn('number', 't');
+      ch3.addColumn('number', 'wave length');
+      var options = { title: 'gyroX (-2000dps - +2000dps)', curveType: 'function', legend: 'none', lineWidth: 5, vAxis: { viewWindowMode:'explicit', viewWindow: { max:2000, min:-2000 }}};
+      var chart = new google.visualization.LineChart(document.getElementById('chart3'));
+      ch3.addRows(json.gx);
+      chart.draw(ch3, options);
+
+      var ch4 = new google.visualization.DataTable();
+      ch4.addColumn('number', 't');
+      ch4.addColumn('number', 'wave length');
+      var options = { title: 'gyroY (-2000dps - +2000dps)', curveType: 'function', legend: 'none', lineWidth: 5, vAxis: { viewWindowMode:'explicit', viewWindow: { max:2000, min:-2000 }}};
+      var chart = new google.visualization.LineChart(document.getElementById('chart4'));
+      ch4.addRows(json.gy);
+      chart.draw(ch4, options);
+
+      var ch5 = new google.visualization.DataTable();
+      ch5.addColumn('number', 't');
+      ch5.addColumn('number', 'wave length');
+      var options = { title: 'gyroZ (-2000dps - +2000dps)', curveType: 'function', legend: 'none', lineWidth: 5, vAxis: { viewWindowMode:'explicit', viewWindow: { max:2000, min:-2000 }}};
+      var chart = new google.visualization.LineChart(document.getElementById('chart5'));
+      ch5.addRows(json.gz);
+      chart.draw(ch5, options);
+
+      var ch6 = new google.visualization.DataTable();
+      ch6.addColumn('number', 't');
+      ch6.addColumn('number', 'wave length');
+      var options = { title: 'heading (0 - 360)', curveType: 'function', legend: 'none', lineWidth: 5, vAxis: { viewWindowMode:'explicit', viewWindow: { max:360, min:0 }}};
+      var chart = new google.visualization.LineChart(document.getElementById('chart6'));
+      ch6.addRows(json.heading);
+      chart.draw(ch6, options);
+
+      var ch7 = new google.visualization.DataTable();
+      ch7.addColumn('number', 't');
+      ch7.addColumn('number', 'wave length');
+      var options = { title: 'pitch (-90 - +90)', curveType: 'function', legend: 'none', lineWidth: 5, vAxis: { viewWindowMode:'explicit', viewWindow: { max:90, min:-90 }}};
+      var chart = new google.visualization.LineChart(document.getElementById('chart7'));
+      ch7.addRows(json.pitch);
+      chart.draw(ch7, options);
+
+      var ch8 = new google.visualization.DataTable();
+      ch8.addColumn('number', 't');
+      ch8.addColumn('number', 'wave length');
+      var options = { title: 'roll (-180 - +180)', curveType: 'function', legend: 'none', lineWidth: 5, vAxis: { viewWindowMode:'explicit', viewWindow: { max:180, min:-180 }}};
+      var chart = new google.visualization.LineChart(document.getElementById('chart8'));
+      ch8.addRows(json.roll);
+      chart.draw(ch8, options);
+
+    });
+  }
+  setInterval(drawChart, 1000);
+
+</script>
+</body>
+</html>

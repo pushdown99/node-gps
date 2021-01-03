@@ -1,0 +1,150 @@
+<!--
+Based on Motion Detector Demo Created by Ákos Nikházy. 
+If you use this app please link this demo http://motion-detector.nikhazy-dizajn.hu/
+-->
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>Frame capture demo</title>
+
+</head>
+<body>
+    <header>
+        <h1>Motion Detection</h1>
+        <h4>with HTML5 API using .getUserMedia()</h4>
+    </header>
+
+    <video autoplay></video>
+    <hr>
+    <canvas id="savePhoto"></canvas>
+    <script>
+
+
+
+
+    function hasGetUserMedia() {
+        //returns true if supported
+        return !!(navigator.getUserMedia || navigator.webkitGetUserMedia
+                || navigator.mozGetUserMedia || navigator.msGetUserMedia);
+    }
+
+    function onSuccess(stream) {
+        //If we can stream from camera.
+        var source;
+
+        //Get the stream. This goes to the video tag
+        if (window.URL) {
+            source = window.URL.createObjectURL(stream);
+        } else if (window.webkitURL) {
+            source = window.webkitURL.createObjectURL(stream);
+        } else {
+            source = stream; // Opera and Firefox
+        }
+
+        //Set up video tag
+        video.autoplay = true;
+        video.src = source;
+
+        //We try to find motion in every X second
+        setInterval(function() {
+            motionDetector();
+        }, sampling);
+
+    }
+
+    function onError() {
+        //if we fail (not supported, no camera etc.)
+        alert('No stream, no win. Refresh.');
+    }
+
+    function saveImage(canvasToSave) {
+        //create image from canvas
+        dataUrl = canvasToSave.toDataURL();
+        imageFound = document.createElement('img');
+        imageFound.src = dataUrl;
+
+        document.body.appendChild(imageFound);
+    }
+
+    function motionDetector() {
+        ctxSave.drawImage(video, 0, 0, savePhoto.width, savePhoto.height);
+    }
+
+    /*After all those functions lets start setting up the program*/
+
+    //Set up elements. Should be a ini() but I don't care right now
+    var video = document.querySelector('video'); //the video tag
+    var savePhoto = document.getElementById('savePhoto'); //the possible saved image's canvas
+
+    var ctxSave = savePhoto.getContext('2d'); //the latest image from video in full size and color
+
+    var sampling = 1000; //how much time needed between samples in milliseconds
+
+    var videoSourceInfo = null;
+
+    //We need this so we can use the videoWidth and ...Height, also we setup canvas sizes here, after we have video data
+    video.addEventListener("loadedmetadata", function() {
+        console.log(video.videoWidth + ":" + video.videoHeight)
+        savePhoto.width = video.videoWidth;
+        savePhoto.height = video.videoHeight;
+    });
+
+
+
+
+    function start() {      //Start the whole magic
+        if (hasGetUserMedia()) {
+
+
+            //it is working?
+            navigator.getUserMedia
+                    || (navigator.getUserMedia = navigator.mozGetUserMedia
+                            || navigator.webkitGetUserMedia
+                            || navigator.msGetUserMedia);
+
+
+            var videoSourceInfoId = videoSourceInfo.id;
+            var constraints = {
+                video : {
+                    optional: [{sourceId: videoSourceInfoId}]
+                },
+                toString : function() {
+                    return "video";
+                }
+            };
+
+
+            navigator.getUserMedia(constraints, onSuccess, onError);
+        } else {
+            //no support
+            alert('getUserMedia() is not supported in your browser. Try Chrome.');
+        }
+    }
+
+    function gotSources(sourceInfos) {
+        for (var i = sourceInfos.length-1 ; i >= 0; i--) { // get last camera index (supposed to back camera)
+            var sourceInfo = sourceInfos[i];
+            if (sourceInfo.kind === 'video') {
+                videoSourceInfo = sourceInfo;
+                console.log('SourceId: ', videoSourceInfo.id);
+                start();
+                break;
+            } else {
+                console.log('Some other kind of source: ', sourceInfo);
+            }
+        }
+    }
+
+    if (typeof MediaStreamTrack === 'undefined') {
+        alert('This browser does not support MediaStreamTrack.\n\nTry Chrome Canary.');
+    } else {
+        MediaStreamTrack.getSources(gotSources);  // async task
+    }
+
+
+</script>
+
+</body>
+</html>

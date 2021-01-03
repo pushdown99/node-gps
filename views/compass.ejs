@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <style>
+    body {
+    font-family: Roboto Slab,Helvetica,Arial,sans-serif;
+    text-rendering: optimizeLegibility;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    -ms-overflow-style: scrollbar;
+    -webkit-tap-highlight-color: transparent;
+    }
+    body {
+    --code-font-family: Menlo,Monaco,Consolas,monospace;
+    --font-weight: 400;
+    --font-weight-bold: 700;
+    --font-weight-heading: 400;
+    --text-muted: #888;
+    --gray-bg: rgba(0,0,0,0.025);
+    --gray-text: #666;
+    --menu-text: #bbb;
+    --body-color: #333;
+    --body-bg: #fff;
+    --border-color: #ebebeb;
+    }
+</style>
+  <link rel="stylesheet" href="/css/burger.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/mdi-font/css/material-design-iconic-font.min.css">
+
+</head>
+<body>
+  <div class="b-nav">
+    <li><a class="b-link" href="/">Dashboard</a></li>
+    <li><a class="b-link" href="/sensors">Sensors</a></li>
+    <li><a class="b-link b-link--active" href="/compass">Compass</a></li>
+    <li><a class="b-link" href="/pdr">PDR (pedestrian dead reckoning)</a></li>
+    <li><a class="b-link" href="/vital">Vital/AI</a></li>
+  </div>
+  <div class="b-container">
+    <div class="b-menu"><div class="b-bun b-bun--top"></div><div class="b-bun b-bun--mid"></div><div class="b-bun b-bun--bottom"></div></div>
+    <a href="/" class="b-brand"><i class="zmdi zmdi-eye zmdi-hc-2x"></i><strong>&nbsp;&nbsp;Watching vital-reaction&nbsp;&nbsp;</strong></a>
+  </div>
+  <script src="/js/burger.min.js"></script>
+  <br><br><br><br><br>
+
+  <div class="container-fluid">
+  <h3>Compass</h3>
+  <hr>
+  </br>
+  <div class="row">
+    <div id="compass" style="position: absolute; left: 40%"><img src='/images/compass.png' width="300" height="300"></div>
+  </div>
+  </div>
+<script>
+  function drawCompass() {
+    $.getJSON('/get-sensors', function(json) {
+      updateCompass (json.heading[0][1]);
+    });
+  }
+
+    function updateCompass(rotate) {
+      rotate = Math.round(rotate);
+      $("#compass").css({
+        "-moz-transform":"rotate(" + rotate + "deg)",
+        "-webkit-transform":"rotate(" + rotate + "deg)",
+        "-o-transform":"rotate(" + rotate + "deg)",
+        "-ms-transform":"rotate(" + rotate + "deg)",
+        "transform": "rotate(" + rotate + "deg)"
+      });
+    }
+  setInterval(drawCompass, 1000);
+
+</script>
+</body>
+</html>

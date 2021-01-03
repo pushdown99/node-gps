@@ -1,0 +1,27 @@
+{
+  "name": "gps",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@tensorflow/tfjs": "^2.8.2",
+    "@tensorflow/tfjs-layers": "^2.8.2",
+    "@tensorflow/tfjs-node": "^2.8.2",
+    "ahrs": "^1.2.3",
+    "aws-iot-device-sdk": "^2.2.6",
+    "dotenv": "^8.2.0",
+    "ejs": "^3.1.5",
+    "express": "^4.17.1",
+    "express-fileupload": "^1.2.0",
+    "moment-timezone": "^0.5.32",
+    "sync-mysql": "^3.0.1",
+    "worker-thread": "^1.1.0",
+    "ws": "^7.4.2"
+  }
+}

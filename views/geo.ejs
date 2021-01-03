@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+  <title>Simple Markers</title>
+  <style>
+    #map-canvas { height: 400px; }
+    .gm-style-iw{
+    height: 100% !important;
+    overflow: hidden !important;
+    width: auto !important;
+    }
+    body {
+    font-family: Roboto Slab,Helvetica,Arial,sans-serif;
+    text-rendering: optimizeLegibility;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    -ms-overflow-style: scrollbar;
+    -webkit-tap-highlight-color: transparent;
+    }
+    body {
+    --code-font-family: Menlo,Monaco,Consolas,monospace;
+    --font-weight: 400;
+    --font-weight-bold: 700;
+    --font-weight-heading: 400;
+    --text-muted: #888;
+    --gray-bg: rgba(0,0,0,0.025);
+    --gray-text: #666;
+    --menu-text: #bbb;
+    --body-color: #333;
+    --body-bg: #fff;
+    --border-color: #ebebeb;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>event generation</h1>
+  <hr>
+  <button id="btn" onclick="onClick()" type="button" class="btn btn-primary btn-lg">start</button><p>
+  <div>latitude : <span id="lat">-</span>, longitude: <span id="lng">-</span></div>
+  <p>
+  <div class="row">
+    <table class="table">
+    <thead>
+    <tr>
+    <th>type</th>
+    <th>X</th>
+    <th>Y</th>
+    <th>Z</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+    <td>Motion</td>
+    <td id="A0">-</td>
+    <td id="A1">-</td>
+    <td id="A2">-</td>
+    </tr>
+    <tr>
+    <td>Orientation</td>
+    <td>alpha</td>
+    <td>beta</td>
+    <td>gamma</td>
+    </tr>
+    <tr>
+    <td>Value</td>
+    <td id="O0">-</td>
+    <td id="O1">-</td>
+    <td id="O2">-</td>
+    </tr>
+    </tbody>
+    </table>
+  </div>
+  <div class="row">
+    <div class="col-md-12 col-sm-12">
+      <div id="map-canvas"></div>
+    </div>
+  </div>
+</div>
+<script>
+  let isStart = 0
+  let a, b, g;
+  let x = 0, y = 0, z = 0;
+  let lat = 0.0, lng = 0.0;
+  let idPostData = 0;
+  let postCount = 0;
+
+  $.postJSON = function(url, data, func) { 
+    $.post(url+(url.indexOf("?") == -1 ? "?" : "&")+"callback=?", data, func, "json"); 
+  }
+
+  function onClick() {
+    if(isStart) {
+      isStart = 0; document.getElementById("btn").innerHTML = "start";
+      clearInterval(idPostData);
+      postCount = 0;
+      return;
+    }
+    else {
+      isStart = 1; document.getElementById("btn").innerHTML = "stop";
+    }
+    if (typeof DeviceMotionEvent.requestPermission === 'function') {
+      DeviceMotionEvent.requestPermission()
+        .then(permissionState => {
+          if (permissionState === 'granted') {
+            window.addEventListener('deviceorientation', function(event) { a = event.alpha; b = event.beta; g = event.gamma; });
+            window.addEventListener("devicemotion", function(event) { x = event.acceleration.x; y = event.acceleration.y; z = event.acceleration.z; });
+          }
+        })
+        .catch(alert);
+    } else {
+      window.addEventListener('deviceorientation', function(event) { a = event.alpha; b = event.beta; g = event.gamma; });
+      window.addEventListener("devicemotion", function(event) { x = event.acceleration.x; y = event.acceleration.y; z = event.acceleration.z; });
+    }
+    idPostData = setInterval (postData, 2000);
+  }
+
+  function gotDevices(d) {
+    let count = 1;
+    let label = '';
+    d.forEach(function(e, i) { // inputdeviceinfo mediadeviceinfo
+      if(e.kind == 'videoinput') {
+        //label += e.label || `Camera ${count++}`
+      }
+    });
+  }
+
+  function onSuccess(heading) {
+    alert('Heading: ' + heading.magneticHeading);
+  };
+
+  function onError(error) {
+    alert('CompassError: ' + error.code);
+  };
+
+  function postData() {
+    if (navigator.geolocation)  { 
+      navigator.geolocation.getCurrentPosition(function(p) { 
+        lat = p.coords.latitude;  // coords (accuracy, altitude, heading, lat/lng, speed)
+        lng = p.coords.longitude; 
+        gMarker (lat, lng);
+      }); 
+    }
+    if (navigator.compass)  { 
+      navigator.compass.getCurrentHeading(onSuccess, onError);
+    }
+    if (navigator.mediaDevices) { navigator.mediaDevices.enumerateDevices().then(gotDevices); }
+
+    document.getElementById("lat").innerHTML = lat.toFixed(4) || null;
+    document.getElementById("lng").innerHTML = lng.toFixed(4) || null;
+    document.getElementById("A0").innerHTML  = x.toFixed(4) || null;
+    document.getElementById("A1").innerHTML  = y.toFixed(4) || null;
+    document.getElementById("A2").innerHTML  = z.toFixed(4) || null;
+    document.getElementById("O0").innerHTML  = a.toFixed(4) || null;
+    document.getElementById("O1").innerHTML  = b.toFixed(4) || null;
+    document.getElementById("O2").innerHTML  = g.toFixed(4) || null;
+   
+    if(lat != 0.0 && lng != 0.0) {
+    var obj = {
+      'cnt': postCount,
+      'alpha': a,
+      'beta' : b,
+      'gamma': g,
+      'x':     x,
+      'y':     y,
+      'z':     z,
+      'lat':   lat,
+      'lng':   lng,
+    };
+
+    $.postJSON("/data", obj, function (data) {
+    });
+    $.getJSON("/get-location", function (data) {
+      if(data.lat >= 36.0  && data.lat <= 39.0 && data.lng <= 128.0 && data.lng >= 126.0)
+      gMarker2 (data.lat, data.lng);
+    });
+    postCount += 1;
+    }
+  }
+
+  </script>
+  <script src="/js/gmap.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDndqINgUgGs6gENZOWErhIP1bVCQwSf6k&libraries=visualization,geometry,drawing&callback=initMap" async defer></script>
+</body>
+</html>

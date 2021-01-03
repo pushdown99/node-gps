@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css" rel="stylesheet" media="all">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.0/moment.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <style>
+    body {
+    font-family: Roboto Slab,Helvetica,Arial,sans-serif;
+    text-rendering: optimizeLegibility;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    -ms-overflow-style: scrollbar;
+    -webkit-tap-highlight-color: transparent;
+    }
+    body {
+    --code-font-family: Menlo,Monaco,Consolas,monospace;
+    --font-weight: 400;
+    --font-weight-bold: 700;
+    --font-weight-heading: 400;
+    --text-muted: #888;
+    --gray-bg: rgba(0,0,0,0.025);
+    --gray-text: #666;
+    --menu-text: #bbb;
+    --body-color: #333;
+    --body-bg: #fff;
+    --border-color: #ebebeb;
+    }
+</style>
+  <link rel="stylesheet" href="/css/burger.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/mdi-font/css/material-design-iconic-font.min.css">
+
+</head>
+<body>
+  <div class="b-nav">
+    <li><a class="b-link b-link--active" href="/">Dashboard</a></li>
+    <li><a class="b-link" href="/sensors">Sensors</a></li>
+    <li><a class="b-link" href="/compass">Compass</a></li>
+    <li><a class="b-link" href="/pdr">PDR (pedestrian dead reckoning)</a></li>
+    <li><a class="b-link" href="/vital">Vital/AI</a></li>
+  </div>
+  <div class="b-container">
+    <div class="b-menu"><div class="b-bun b-bun--top"></div><div class="b-bun b-bun--mid"></div><div class="b-bun b-bun--bottom"></div></div>
+    <a href="/" class="b-brand"><i class="zmdi zmdi-eye zmdi-hc-2x"></i><strong>&nbsp;&nbsp;Watching vital-reaction&nbsp;&nbsp;</strong></a>
+  </div>
+  <script src="/js/burger.min.js"></script>
+  <br><br><br><br><br>
+
+  <div class="container-fluid">
+    <h3>IMU (inertial measurement units) sensor monitor</h3>
+    <hr>
+    </br>
+    <div class="row">
+      <div class="col-md-3 col-sm-12"><div id="c0"></div></div>
+      <div class="col-md-3 col-sm-12"><div id="c1"></div></div>
+      <div class="col-md-3 col-sm-12"><div id="c2"></div></div>
+      <div class="col-md-3 col-sm-12"><div id="c3"></div></div>
+    </div>
+    <div class="row">
+      <div class="col-md-12 col-sm-12">
+      <hr><br>
+        <h5>Recent data</h5>
+        <div id="sensor"></div>
+      </div>
+    </div>
+  </div>
+
+<script type="text/javascript">
+  google.charts.load('current', {'packages':['gauge']});
+  google.charts.setOnLoadCallback(drawChart);
+
+  function drawChart() {
+    $.getJSON('/get-last-sensors', function(json) {
+        var d0 = google.visualization.arrayToDataTable([ ['Label', 'Value'], ['aX', 0] ]);
+        var d1 = google.visualization.arrayToDataTable([ ['Label', 'Value'], ['aY', 0] ]);
+        var d2 = google.visualization.arrayToDataTable([ ['Label', 'Value'], ['aZ', 0] ]);
+        var d3 = google.visualization.arrayToDataTable([ ['Label', 'Value'], ['aK', 0] ]);
+
+        var o0 = { max:5, min:-5, redFrom: -5, redTo: -2, yellowFrom:2, yellowTo: 5, minorTicks: 0.0001 };
+        var o1 = { max:5, min:-5, redFrom: -5, redTo: -2, yellowFrom:2, yellowTo: 5, minorTicks: 0.0001 };
+        var o2 = { max:5, min:-5, redFrom: -5, redTo: -2, yellowFrom:2, yellowTo: 5, minorTicks: 0.0001 };
+        var o3 = { max:5, min:-5, redFrom: -5, redTo: -2, yellowFrom:2, yellowTo: 5, minorTicks: 0.0001 };
+
+        var c0 = new google.visualization.Gauge(document.getElementById('c0'));
+        var c1 = new google.visualization.Gauge(document.getElementById('c1'));
+        var c2 = new google.visualization.Gauge(document.getElementById('c2'));
+        var c3 = new google.visualization.Gauge(document.getElementById('c3'));
+
+        d0.setValue(0, 1, json[0].ax);
+        d1.setValue(0, 1, json[0].ay);
+        d2.setValue(0, 1, json[0].az);
+        d3.setValue(0, 1, json[0].ak);
+
+        c0.draw(d0, o0);
+        c1.draw(d1, o1);
+        c2.draw(d2, o2);
+        c3.draw(d3, o3);
+    });
+  }
+
+  var pagelength = 10;
+
+  function getTable () {
+    $.getJSON("/get-all-sensors", function(data) {
+      console.log(data);
+      blocks = data;
+      var info  = document.getElementById("sensor");
+      var w = $(document).width();
+
+      html = '<div class="table-responsive">';
+      html += '<table id="receipt-table" class="table table-striped table-bordered table-sm" cellspacing="0" width="100%">';
+      html += '<thead>';
+      html += '<tr>';
+      html += '<th>id</th>';
+      html += '<th>Device</th>';
+      html += '<th>aX</th>';
+      html += '<th>aY</th>';
+      html += '<th>aZ</th>';
+      html += '<th>gX</th>';
+      html += '<th>gY</th>';
+      html += '<th>gZ</th>';
+      html += '<th>time</th>';
+      html += '</tr>';
+      html += '</thead>';
+      html += '<tbody>';
+      $.each(data, function(i, t) {
+        html += '<tr>';
+        html += '<td>' + t.id + '</td>';
+        html += '<td>' + t.dev + '</td>';
+        html += '<td>' + t.ax + '</td>';
+        html += '<td>' + t.ay + '</td>';
+        html += '<td>' + t.az + '</td>';
+        html += '<td>' + t.gx + '</td>';
+        html += '<td>' + t.gy + '</td>';
+        html += '<td>' + t.gz + '</td>';
+        html += '<td>' + moment(t.ts).format('MM/DD HH:mm:ss') + '</td>';
+        html += '</tr>';
+      });
+      html += '</tbody>';
+      html += '</table>';
+      html += '</div>';
+
+      //////////////////////////////////////////////////////////////////////////////////////
+      info.innerHTML = html;
+      $('#receipt-table').DataTable({
+        "pagingType": "numbers", // "simple" option for 'Previous' and 'Next' buttons only
+        "order": [[ 0, "desc" ]],
+        "pageLength": pagelength
+      });
+    });
+  }
+  getTable();
+  setInterval(drawChart,  1000);
+  setInterval(getTable,  10000);
+</script>
+</body>
+</html>
